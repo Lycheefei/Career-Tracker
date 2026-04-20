@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Career Tracker · Season One</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ── Career Tracker · design tokens ─────────────────────────── */
+:root {
+  --bg:         #15120e;
+  --bg-2:       #1c1814;
+  --bg-3:       #241f1a;
+  --panel:      #1a1612;
+  --panel-hi:   #231d17;
+  --border:     rgba(210, 180, 140, 0.10);
+  --border-hi:  rgba(210, 180, 140, 0.18);
+  --text:       #f2ebe0;
+  --text-2:     #c4b8a3;
+  --text-3:     #7f7460;
+  --text-4:     #524a3c;
+  --amber:      oklch(0.78 0.14 62);
+  --amber-dim:  oklch(0.55 0.10 62);
+  --amber-bg:   oklch(0.25 0.06 62 / 0.35);
+  --teal:       oklch(0.78 0.08 190);
+  --teal-dim:   oklch(0.55 0.06 190);
+  --teal-bg:    oklch(0.25 0.04 190 / 0.35);
+  --rose:       oklch(0.72 0.12 20);
+  --rose-dim:   oklch(0.50 0.10 20);
+  --green:      oklch(0.72 0.12 150);
+  --green-dim:  oklch(0.45 0.08 150);
+  --radius:     10px;
+  --radius-lg:  16px;
+  --font:       'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --mono:       'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --shadow-lg:  0 1px 0 rgba(255,255,255,0.03) inset, 0 20px 50px -20px rgba(0,0,0,0.6);
+  --pad:        20px;
+}
+[data-theme="paper"] {
+  --bg: #f1ecdf; --bg-2: #e9e3d3; --bg-3: #e2dbc8;
+  --panel: #faf6ea; --panel-hi: #f4eedc;
+  --border: rgba(60,45,25,0.10); --border-hi: rgba(60,45,25,0.20);
+  --text: #2a241c; --text-2: #615848; --text-3: #958a75; --text-4: #b8ad96;
+  --amber-bg: oklch(0.85 0.08 62 / 0.5);
+  --teal-bg:  oklch(0.85 0.05 190 / 0.5);
+  --shadow-lg: 0 1px 0 rgba(255,255,255,0.6) inset, 0 14px 40px -20px rgba(60,45,25,0.25);
+}
+[data-theme="ink"] {
+  --bg: #0a0e14; --bg-2: #0f141c; --bg-3: #141a24;
+  --panel: #0f141c; --panel-hi: #141a24;
+  --border: rgba(150,180,220,0.08); --border-hi: rgba(150,180,220,0.16);
+  --text: #e6ecf4; --text-2: #a8b4c4; --text-3: #6a7686; --text-4: #455060;
+  --amber: oklch(0.78 0.12 48);
+  --teal:  oklch(0.78 0.10 220);
+  --teal-bg: oklch(0.25 0.06 220 / 0.4);
+}
+[data-density="compact"] { --pad: 14px; --radius: 8px; --radius-lg: 12px; }
+[data-density="spacious"] { --pad: 28px; --radius: 12px; --radius-lg: 20px; }
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0;
+  background: var(--bg); color: var(--text);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: 'ss01', 'cv11';
+}
+body {
+  min-height: 100vh;
+  background-image:
+    radial-gradient(ellipse at 10% 0%, rgba(255,180,120,0.04), transparent 50%),
+    radial-gradient(ellipse at 100% 100%, rgba(120,200,220,0.03), transparent 50%);
+}
+.mono { font-family: var(--mono); }
+.muted  { color: var(--text-2); }
+.muted2 { color: var(--text-3); }
+.tiny   { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); }
+.hr { height: 1px; background: var(--border); margin: 0; border: 0; }
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--pad);
+  position: relative;
+}
+.panel--flush { padding: 0; overflow: hidden; }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 3px 8px; border-radius: 999px;
+  font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase;
+  border: 1px solid var(--border-hi); color: var(--text-2);
+  background: transparent;
+}
+.chip--amber { color: var(--amber); border-color: oklch(0.55 0.10 62 / 0.5); background: var(--amber-bg); }
+.chip--teal  { color: var(--teal);  border-color: oklch(0.55 0.06 190 / 0.5); background: var(--teal-bg); }
+.chip--green { color: var(--green); border-color: oklch(0.45 0.08 150 / 0.5); background: oklch(0.25 0.04 150 / 0.35); }
+.chip--rose  { color: var(--rose);  border-color: oklch(0.50 0.10 20 / 0.5);  background: oklch(0.25 0.06 20 / 0.35); }
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 14px; border-radius: 8px;
+  background: transparent; color: var(--text);
+  border: 1px solid var(--border-hi);
+  font: 500 13px/1 var(--font);
+  cursor: pointer; transition: all 120ms;
+}
+.btn:hover { background: var(--panel-hi); border-color: var(--text-3); }
+.btn--primary { background: var(--amber); color: #1a130a; border-color: transparent; }
+.btn--primary:hover { background: oklch(0.82 0.14 62); color: #1a130a; }
+.btn--ghost { border-color: transparent; padding: 6px 10px; color: var(--text-2); }
+.bar { height: 6px; width: 100%; background: var(--bg-3); border-radius: 999px; overflow: hidden; }
+.bar__fill { height: 100%; background: var(--amber); border-radius: 999px; transition: width 400ms; }
+.bar__fill--teal { background: var(--teal); }
+.bar__fill--green { background: var(--green); }
+.qbox {
+  width: 22px; height: 22px; border-radius: 6px;
+  border: 1.5px solid var(--border-hi);
+  background: transparent;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all 120ms;
+  flex-shrink: 0;
+}
+.qbox:hover { border-color: var(--amber); }
+.qbox--done { background: var(--green); border-color: var(--green); }
+.qbox--done svg { display: block; }
+.qbox svg { display: none; }
+.quest { display: flex; align-items: center; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.quest:last-child { border-bottom: 0; }
+.quest__body { flex: 1; min-width: 0; }
+.quest__title { font: 500 14px var(--font); color: var(--text); }
+.quest__meta { font: 400 12px var(--font); color: var(--text-3); margin-top: 2px; display: flex; gap: 10px; }
+.quest--done .quest__title { color: var(--text-3); text-decoration: line-through; text-decoration-color: var(--text-4); }
+.ticks { display: inline-flex; gap: 3px; }
+.ticks .tick { width: 14px; height: 6px; border-radius: 1px; background: var(--text-4); }
+.ticks .tick--on { background: currentColor; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-hi); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-3); }
+.tweaks {
+  position: fixed; bottom: 20px; right: 20px; z-index: 100;
+  width: 280px; padding: 16px;
+  background: var(--panel); border: 1px solid var(--border-hi);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);
+  display: none; flex-direction: column; gap: 14px;
+  font-size: 13px;
+}
+.tweaks.open { display: flex; }
+.tweaks__row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.tweaks__label { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); }
+.tweaks__seg { display: flex; gap: 4px; padding: 3px; background: var(--bg-3); border-radius: 8px; }
+.tweaks__seg button { flex: 1; padding: 6px 8px; border-radius: 5px; border: 0; background: transparent; color: var(--text-2); font: 500 12px var(--font); cursor: pointer; }
+.tweaks__seg button.on { background: var(--panel); color: var(--text); box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+.tweaks-fab {
+  position: fixed; bottom: 20px; right: 20px; z-index: 99;
+  width: 44px; height: 44px; border-radius: 12px;
+  background: var(--panel-hi); border: 1px solid var(--border-hi);
+  box-shadow: var(--shadow-lg);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--text-2); transition: all 120ms;
+}
+.tweaks-fab:hover { background: var(--amber); color: #1a130a; border-color: transparent; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.fade { animation: fadeUp 400ms ease both; }
+@keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 oklch(0.78 0.14 62 / 0.4); } 50% { box-shadow: 0 0 0 6px oklch(0.78 0.14 62 / 0); } }
+.pulse { animation: pulse 2s ease infinite; }
+
+/* Modal overlay */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(10,8,6,0.75);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 200; padding: 20px; backdrop-filter: blur(6px);
+}
+.modal-box {
+  max-width: 640px; width: 100%; background: var(--panel);
+  border: 1px solid var(--border-hi); border-radius: 16px; padding: 28px;
+  max-height: 90vh; overflow: auto;
+}
+/* Mobile responsive */
+@media (max-width: 640px) {
+  .top-nav-tabs { display: none !important; }
+  .top-nav-right .help-btn-text { display: none; }
+  .stat-strip { grid-template-columns: repeat(3, 1fr) !important; }
+}
+</style>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useEffect, useMemo, useCallback, useRef } = React;
+
+// ══════════════════════════════════════════════════════════════
+// DATA ENGINE — real dates, localStorage persistence, daily reset
+// ══════════════════════════════════════════════════════════════
+
+const SEASON_START = '2026-04-20';
+const SEASON_END = '2026-12-21';
+const STORAGE_KEY = 'ct_state_v3';
+
+const DEFAULT_QUESTS = [
+  { id: 'q1', kind: 'code',   title: 'LeetCode · Two Sum (easy)',                mins: 20, xp: 40, done: false, skill: 'arrays' },
+  { id: 'q2', kind: 'study',  title: 'ML math · gradient descent (3Blue1Brown)', mins: 15, xp: 30, done: false, skill: 'calc'   },
+  { id: 'q3', kind: 'build',  title: 'RAG project · set up LangChain + Chroma',  mins: 20, xp: 50, done: false, skill: 'llm'    },
+  { id: 'q4', kind: 'lang',   title: 'German · Anki reviews (20 cards)',          mins: 10, xp: 20, done: false, skill: 'vocab'  },
+  { id: 'q5', kind: 'review', title: 'Journal · 3 lines on what clicked today',   mins: 3,  xp: 15, done: false, skill: null     },
+];
+
+const PHASES = [
+  { n: 1, name: 'Foundations', weeks: '1–8', range: 'Apr 20 – Jun 14',
+    theme: 'Rebuild the base. ML math, core DSA, first German push.',
+    focus: ['ML/DL math', 'LeetCode Easy ramp', 'German B1→B2 grammar', 'Portfolio repo #1 (ETL→Dashboard)'] },
+  { n: 2, name: 'Depth', weeks: '9–18', range: 'Jun 15 – Aug 23',
+    theme: 'Go deep. GenAI, classic ML, DP, system design basics.',
+    focus: ['LLM/RAG project #2', 'DP & graphs', 'ML system design reps', 'AWS Cloud Practitioner'] },
+  { n: 3, name: 'Portfolio', weeks: '19–26', range: 'Aug 24 – Oct 18',
+    theme: 'Ship visibly. 2 public projects. Resume + LinkedIn.',
+    focus: ['Portfolio project #3 (ML Eng)', 'Blog x3 posts', 'Resume v2', 'German B2 exam-ready'] },
+  { n: 4, name: 'Apply & Close', weeks: '27–35', range: 'Oct 19 – Dec 21',
+    theme: 'Mock interviews, applications, offers.',
+    focus: ['2 mock interviews / week', '40 applications', 'Behavioral stories', 'Negotiation'] },
+];
+
+const SKILLS_INIT = [
+  { id: 'py',      name: 'Python fluency',       branch: 'core', level: 0, max: 5, retention: 0, lastTouched: 0 },
+  { id: 'sql',     name: 'SQL & windows',        branch: 'core', level: 0, max: 5, retention: 0, lastTouched: 0 },
+  { id: 'stats',   name: 'Stats & probability',  branch: 'math', level: 0, max: 5, retention: 0, lastTouched: 0 },
+  { id: 'linalg',  name: 'Linear algebra',       branch: 'math', level: 0, max: 5, retention: 0, lastTouched: 0 },
+  { id: 'calc',    name: 'Calculus for ML',      branch: 'math', level: 0, max: 5, retention: 0, lastTouched: 0 },
+  { id: 'arrays',  name: 'Arrays & hashing',     branch: 'dsa',  level: 0, max: 5, retention: 0, lastTouched: 0 },
+  { id: 'twoptr',  name: 'Two pointers',         branch: 'dsa',  level: 0, max: 5, retention: 0, lastTouched: 0 },
+  { id: 'bsearch', name: 'Binary search',        branch: 'dsa',  level: 0, max: 5, retention: 0, lastTouched: 0 },
+  { id: 'trees',   name: 'Trees & DFS/BFS',      branch: 'dsa',  level: 0, max: 5, retention: 0, lastTouched: 0 },
+  { id: 'dp',      name: 'Dynamic programming',  branch: 'dsa',  level: 0, max: 5, retention: 0, lastTouched: 0 },
+  { id: 'graphs',  name: 'Graphs',               branch: 'dsa',  level: 0, max: 5, retention: 0, lastTouched: 0 },
+  { id: 'classic', name: 'Classical ML',         branch: 'ml',   level: 0, max: 5, retention: 0, lastTouched: 0 },
+  { id: 'dl',      name: 'Deep learning',        branch: 'ml',   level: 0, max: 5, retention: 0, lastTouched: 0 },
+  { id: 'llm',     name: 'LLM / RAG',            branch: 'ml',   level: 0, max: 5, retention: 0, lastTouched: 0 },
+  { id: 'mlops',   name: 'MLOps & deployment',   branch: 'ml',   level: 0, max: 5, retention: 0, lastTouched: 0 },
+  { id: 'mlsys',   name: 'ML system design',     branch: 'ml',   level: 0, max: 5, retention: 0, lastTouched: 0 },
+  { id: 'aws',     name: 'AWS fundamentals',     branch: 'cloud', level: 0, max: 5, retention: 0, lastTouched: 0 },
+  { id: 'docker',  name: 'Docker & k8s basics',  branch: 'cloud', level: 0, max: 5, retention: 0, lastTouched: 0 },
+  { id: 'german',  name: 'German B1→B2',         branch: 'lang',  level: 0, max: 5, retention: 0, lastTouched: 0 },
+  { id: 'gramm',   name: 'German grammar',       branch: 'lang',  level: 0, max: 5, retention: 0, lastTouched: 0 },
+  { id: 'vocab',   name: 'Tech vocabulary DE',   branch: 'lang',  level: 0, max: 5, retention: 0, lastTouched: 0 },
+];
+
+const BRANCHES = {
+  core:  { label: 'Core tools',       color: '#7ec4cf' },
+  math:  { label: 'Math foundations', color: '#c9a979' },
+  dsa:   { label: 'DSA / interview',  color: '#e89b6d' },
+  ml:    { label: 'ML / AI',          color: '#b892d4' },
+  cloud: { label: 'Cloud & infra',    color: '#8ab573' },
+  lang:  { label: 'German',           color: '#d48a8a' },
+};
+
+const PROJECTS = [
+  { id: 'p1', name: 'ETL → Superset dashboard', tag: 'Data Eng', progress: 0, target: 'Public repo + README', status: 'planned', stack: ['Python', 'SQLAlchemy', 'Superset', 'Postgres'], note: 'Anonymized version of your work project.' },
+  { id: 'p2', name: 'RAG over my notes', tag: 'LLM / AI', progress: 0, target: 'Live demo + blog post', status: 'planned', stack: ['LangChain', 'Chroma', 'OpenAI', 'Streamlit'], note: 'Weekend build. Blog post draft by W8.' },
+  { id: 'p3', name: 'Churn prediction + MLOps', tag: 'ML Engineer', progress: 0, target: 'FastAPI + Docker + CI', status: 'planned', stack: ['scikit-learn', 'FastAPI', 'Docker', 'GH Actions'], note: 'Phase 2 kickoff.' },
+  { id: 'p4', name: 'Feedback-analyzer v2', tag: 'Applied DS', progress: 0, target: 'Open-source re-build', status: 'planned', stack: ['LLM', 'Prompt evals', 'Gradio'], note: 'Rebuild for portfolio.' },
+];
+
+function todayISO() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+function daysBetween(a, b) {
+  return Math.floor((new Date(b) - new Date(a)) / 86400000);
+}
+
+function getWeekday() {
+  return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new Date().getDay()];
+}
+
+function formatDate(iso) {
+  const d = new Date(iso + 'T12:00:00');
+  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${days[d.getDay()]}, ${months[d.getMonth()]} ${d.getDate()}`;
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch { return null; }
+}
+
+function saveState(state) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function initState() {
+  const saved = loadState();
+  const today = todayISO();
+
+  if (saved) {
+    // Check if it's a new day
+    if (saved.lastActiveDate !== today) {
+      // Calculate streak
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayISO = yesterday.toISOString().split('T')[0];
+
+      let streak = saved.streak;
+      // If they did their MVD yesterday, streak continues, otherwise reset
+      const yesterdayMins = saved.dayLog?.[saved.lastActiveDate]?.minutes || 0;
+      if (saved.lastActiveDate === yesterdayISO && yesterdayMins >= 15) {
+        // streak continues
+      } else if (saved.lastActiveDate !== yesterdayISO) {
+        // missed a day — check if they had MVD on last active
+        const daysSince = daysBetween(saved.lastActiveDate, today);
+        if (daysSince > 1) {
+          streak = 0; // missed days
+        }
+      }
+
+      // Log the week activity from yesterday
+      const weekLog = [...(saved.weekLog || [0,0,0,0,0,0,0])];
+
+      return {
+        ...saved,
+        lastActiveDate: today,
+        todayQuests: DEFAULT_QUESTS.map(q => ({...q, done: false})),
+        minutesToday: 0,
+        xpToday: 0,
+        streak,
+        weekLog,
+      };
+    }
+    return saved;
+  }
+
+  // Fresh start
+  return {
+    lastActiveDate: today,
+    xp: 0,
+    level: 1,
+    xpToNext: 200,
+    streak: 0,
+    bestStreak: 0,
+    totalMinutes: 0,
+    minutesToday: 0,
+    xpToday: 0,
+    todayQuests: DEFAULT_QUESTS.map(q => ({...q})),
+    skills: SKILLS_INIT.map(s => ({...s})),
+    projects: PROJECTS.map(p => ({...p})),
+    apps: { target: 40, submitted: 0, screens: 0, onsites: 0, offers: 0 },
+    journal: [],
+    weekLog: [0,0,0,0,0,0,0],
+    dayLog: {},
+  };
+}
+
+// ══════════════════════════════════════════════════════════════
+// ICONS
+// ══════════════════════════════════════════════════════════════
+
+const Icon = {
+  flame: (s=16, c='currentColor') => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none"><path d="M12 2s4 4 4 8a4 4 0 1 1-8 0c0-2 1-3 1-3s-1 4 1 4 2-3 2-5-0-4 0-4z" stroke={c} strokeWidth="1.8" strokeLinejoin="round"/><path d="M7 14a5 5 0 1 0 10 0" stroke={c} strokeWidth="1.8"/></svg>
+  ),
+  bolt: (s=14, c='currentColor') => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill={c}><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z"/></svg>
+  ),
+  check: (s=14, c='#1a130a') => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 7" stroke={c} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/></svg>
+  ),
+  clock: (s=14, c='currentColor') => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke={c} strokeWidth="1.6"/><path d="M12 7v5l3 2" stroke={c} strokeWidth="1.6" strokeLinecap="round"/></svg>
+  ),
+  book: (s=14, c='currentColor') => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none"><path d="M4 4h6a3 3 0 0 1 3 3v14a2 2 0 0 0-2-2H4V4zM20 4h-6a3 3 0 0 0-3 3v14a2 2 0 0 1 2-2h7V4z" stroke={c} strokeWidth="1.6" strokeLinejoin="round"/></svg>
+  ),
+  code: (s=14, c='currentColor') => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none"><path d="M9 7l-5 5 5 5M15 7l5 5-5 5" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+  ),
+  build: (s=14, c='currentColor') => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none"><path d="M3 7l9-4 9 4v10l-9 4-9-4V7z M3 7l9 4 9-4 M12 11v10" stroke={c} strokeWidth="1.6" strokeLinejoin="round"/></svg>
+  ),
+  lang: (s=14, c='currentColor') => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none"><path d="M3 5h10M8 3v2M6 10c0-3 2-5 4-5s4 2 4 5M4 10h10" stroke={c} strokeWidth="1.6" strokeLinecap="round"/><path d="M12 21l5-11 5 11M14 17h6" stroke={c} strokeWidth="1.6" strokeLinecap="round"/></svg>
+  ),
+  journal: (s=14, c='currentColor') => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none"><path d="M5 3h13a1 1 0 0 1 1 1v17l-4-2-4 2-4-2-2 1V4a1 1 0 0 1 1-1z" stroke={c} strokeWidth="1.6" strokeLinejoin="round"/><path d="M9 8h6M9 12h6M9 16h4" stroke={c} strokeWidth="1.6" strokeLinecap="round"/></svg>
+  ),
+  spark: (s=14, c='currentColor') => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none"><path d="M12 2v5M12 17v5M2 12h5M17 12h5M5 5l3 3M16 16l3 3M19 5l-3 3M8 16l-3 3" stroke={c} strokeWidth="1.6" strokeLinecap="round"/></svg>
+  ),
+  lock: (s=14, c='currentColor') => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="10" rx="2" stroke={c} strokeWidth="1.6"/><path d="M8 11V8a4 4 0 0 1 8 0v3" stroke={c} strokeWidth="1.6"/></svg>
+  ),
+  gear: (s=16, c='currentColor') => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke={c} strokeWidth="1.6"/><path d="M12 1v3M12 20v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M1 12h3M20 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12" stroke={c} strokeWidth="1.6" strokeLinecap="round"/></svg>
+  ),
+};
+
+function kindIcon(k, c='currentColor') {
+  return ({ code: Icon.code(14,c), study: Icon.book(14,c), build: Icon.build(14,c), lang: Icon.lang(14,c), review: Icon.journal(14,c) })[k] || Icon.bolt(14,c);
+}
+
+// ══════════════════════════════════════════════════════════════
+// PRIMITIVES
+// ══════════════════════════════════════════════════════════════
+
+function Ring({ value, max = 1, size = 120, stroke = 10, color = 'var(--amber)', track = 'var(--bg-3)', children }) {
+  const r = (size - stroke) / 2;
+  const c = 2 * Math.PI * r;
+  const pct = Math.max(0, Math.min(1, value / max));
+  const off = c * (1 - pct);
+  return (
+    <div style={{ position: 'relative', width: size, height: size }}>
+      <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
+        <circle cx={size/2} cy={size/2} r={r} stroke={track} strokeWidth={stroke} fill="none" />
+        <circle cx={size/2} cy={size/2} r={r} stroke={color} strokeWidth={stroke} fill="none"
+          strokeDasharray={c} strokeDashoffset={off} strokeLinecap="round"
+          style={{ transition: 'stroke-dashoffset 600ms ease' }}/>
+      </svg>
+      <div style={{ position:'absolute', inset: 0, display:'flex', alignItems:'center', justifyContent:'center', flexDirection:'column' }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function LevelPips({ level, max = 5, color = 'var(--amber)' }) {
+  return (
+    <div className="ticks" style={{ color }}>
+      {Array.from({length: max}).map((_, i) =>
+        <span key={i} className={'tick' + (i < level ? ' tick--on' : '')} />)}
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════
+// TWEAKS PANEL
+// ══════════════════════════════════════════════════════════════
+
+function Tweaks({ values, onChange, open, onClose }) {
+  const Seg = ({ field, options }) => (
+    <div className="tweaks__seg">
+      {options.map(o => (
+        <button key={o.v} className={values[field] === o.v ? 'on' : ''}
+                onClick={() => onChange({ [field]: o.v })}>
+          {o.label}
+        </button>
+      ))}
+    </div>
+  );
+  return (
+    <div className={'tweaks' + (open ? ' open' : '')}>
+      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+        <div style={{ font: '600 13px var(--font)' }}>Tweaks</div>
+        <button className="btn btn--ghost" onClick={onClose} style={{ padding: 2, fontSize: 18 }}>×</button>
+      </div>
+      <div className="tweaks__row" style={{ flexDirection:'column', alignItems:'stretch', gap: 6 }}>
+        <div className="tweaks__label">Theme</div>
+        <Seg field="theme" options={[
+          { v: 'warm-dark', label: 'Warm dark' },
+          { v: 'paper', label: 'Paper' },
+          { v: 'ink', label: 'Ink' },
+        ]}/>
+      </div>
+      <div className="tweaks__row" style={{ flexDirection:'column', alignItems:'stretch', gap: 6 }}>
+        <div className="tweaks__label">Density</div>
+        <Seg field="density" options={[
+          { v: 'compact', label: 'Compact' },
+          { v: 'default', label: 'Default' },
+          { v: 'spacious', label: 'Spacious' },
+        ]}/>
+      </div>
+      <div className="tweaks__row" style={{ flexDirection:'column', alignItems:'stretch', gap: 6 }}>
+        <div className="tweaks__label">Layout</div>
+        <Seg field="layout" options={[
+          { v: 'dashboard', label: 'Dashboard' },
+          { v: 'mobile', label: 'Mobile' },
+        ]}/>
+      </div>
+      <div style={{ marginTop: 6, borderTop: '1px solid var(--border)', paddingTop: 12 }}>
+        <button className="btn" style={{ width: '100%', justifyContent: 'center', fontSize: 12, color: 'var(--rose)' }}
+          onClick={() => { if (confirm('Reset all data? This clears your streak, XP, journal, and quest history.')) { localStorage.removeItem(STORAGE_KEY); location.reload(); } }}>
+          Reset all data
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════
+// HERO
+// ══════════════════════════════════════════════════════════════
+
+function Hero({ state, seasonInfo }) {
+  const { xp, xpToNext, level, streak, bestStreak, totalMinutes, minutesToday } = state;
+  const { daysLeft, daysElapsed, totalDays, currentWeek, weeksTotal } = seasonInfo;
+  const mvdMin = 15;
+  const dailyGoal = 60;
+  const hitMVD = minutesToday >= mvdMin;
+  const isFirstDay = streak === 0 && totalMinutes === 0;
+  const xpPct = xpToNext ? xp / xpToNext : 0;
+  const seasonPct = daysElapsed / totalDays;
+  const totalHours = (totalMinutes / 60);
+  const shipped = state.projects.filter(p => p.status === 'shipped').length;
+
+  return (
+    <div className="panel fade" style={{ padding: 'calc(var(--pad) * 1.4)', overflow: 'hidden' }}>
+      <div style={{
+        position: 'absolute', top: -100, right: -100, width: 340, height: 340,
+        background: 'radial-gradient(circle, oklch(0.65 0.14 62 / 0.18), transparent 70%)',
+        pointerEvents: 'none',
+      }}/>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 24, alignItems: 'start', position: 'relative' }}>
+        <div>
+          <div className="tiny">Season One · The December Run</div>
+          <h1 style={{ font: '600 32px/1.1 var(--font)', margin: '8px 0 4px', letterSpacing: '-0.02em' }}>
+            {isFirstDay ? <>Day zero, Lychee. Let's begin.</> : <>Guten Morgen, Lychee.</>}
+          </h1>
+          <div className="muted" style={{ fontSize: 15 }}>
+            {isFirstDay
+              ? <>Pick one quest below. Any one. A <span style={{color:'var(--amber)'}}>15-minute win</span> today starts the chain.</>
+              : hitMVD
+              ? <>Streak is safe. <span style={{color:'var(--amber)'}}>{minutesToday - mvdMin} min</span> past your MVD — push for the full hour?</>
+              : <><span style={{color:'var(--rose)'}}>{mvdMin - minutesToday} min</span> left on today's Minimum Viable Day to keep the chain alive.</>}
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
+          <div style={{ textAlign: 'right' }}>
+            <div className="tiny">Streak</div>
+            <div style={{ font: '600 28px var(--mono)', color: 'var(--amber)', display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'flex-end' }}>
+              {Icon.flame(22, 'var(--amber)')} {streak}
+            </div>
+            <div className="tiny" style={{ color: 'var(--text-4)' }}>best · {bestStreak}</div>
+          </div>
+          <Ring value={minutesToday} max={dailyGoal} size={88} stroke={8}
+                color={hitMVD ? 'var(--green)' : 'var(--amber)'}>
+            <div style={{ font: '600 22px var(--mono)' }}>{minutesToday}</div>
+            <div className="tiny" style={{ color: 'var(--text-3)', marginTop: 0 }}>/ {dailyGoal}m</div>
+          </Ring>
+        </div>
+      </div>
+      <div className="stat-strip" style={{
+        display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 1,
+        marginTop: 24, background: 'var(--border)', borderRadius: 10, overflow: 'hidden',
+      }}>
+        {[
+          { label: 'Level', val: level, sub: `${xp} / ${xpToNext} XP`, barVal: xpPct, barColor: 'var(--amber)' },
+          { label: 'Season', val: `Wk ${currentWeek}/${weeksTotal}`, sub: `${daysLeft} days to apply`, barVal: seasonPct, barColor: 'var(--teal)' },
+          { label: 'Hours', val: totalHours.toFixed(1), sub: 'logged · season' },
+          { label: 'Projects', val: `${shipped}/${state.projects.length}`, sub: 'shipped' },
+          { label: 'Applications', val: `${state.apps.submitted}/${state.apps.target}`, sub: 'queue · Dec 2026' },
+        ].map((s, i) => (
+          <div key={i} style={{ background: 'var(--panel-hi)', padding: '14px 16px' }}>
+            <div className="tiny">{s.label}</div>
+            <div style={{ font: '600 22px var(--mono)', color: 'var(--text)', marginTop: 4 }}>{s.val}</div>
+            <div className="muted" style={{ fontSize: 12, marginTop: 2 }}>{s.sub}</div>
+            {s.barVal !== undefined && (
+              <div className="bar" style={{ marginTop: 8, height: 3 }}>
+                <div className="bar__fill" style={{ width: `${s.barVal*100}%`, background: s.barColor }}/>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════
+// TODAY QUESTS — toggling updates minutes, XP, streak
+// ══════════════════════════════════════════════════════════════
+
+function TodayQuests({ state, onToggle }) {
+  const { todayQuests, minutesToday } = state;
+  const doneCount = todayQuests.filter(q => q.done).length;
+  const totalXP = todayQuests.reduce((a, q) => a + (q.done ? q.xp : 0), 0);
+  const possibleXP = todayQuests.reduce((a, q) => a + q.xp, 0);
+  const mvdMin = 15;
+  const hitMVD = minutesToday >= mvdMin;
+
+  return (
+    <div className="panel fade">
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom: 14 }}>
+        <div>
+          <div className="tiny">Today · {formatDate(todayISO())}</div>
+          <div style={{ font: '600 18px var(--font)', marginTop: 2 }}>Daily quests</div>
+        </div>
+        <div style={{ display:'flex', alignItems:'center', gap: 10 }}>
+          <span className="chip chip--amber">{Icon.bolt(11, 'currentColor')} +{totalXP} / {possibleXP} XP</span>
+          <span className="mono muted" style={{ fontSize: 12 }}>{doneCount}/{todayQuests.length}</span>
+        </div>
+      </div>
+
+      <div style={{
+        display:'flex', alignItems:'center', gap: 10,
+        padding: '10px 12px', borderRadius: 8,
+        background: hitMVD ? 'oklch(0.25 0.04 150 / 0.25)' : 'oklch(0.25 0.06 20 / 0.25)',
+        border: `1px solid ${hitMVD ? 'oklch(0.45 0.08 150 / 0.4)' : 'oklch(0.50 0.10 20 / 0.4)'}`,
+        marginBottom: 14,
+      }}>
+        <div style={{ color: hitMVD ? 'var(--green)' : 'var(--rose)' }}>
+          {hitMVD ? Icon.check(14, 'currentColor') : Icon.clock(14, 'currentColor')}
+        </div>
+        <div style={{ flex: 1, fontSize: 12.5, color: 'var(--text-2)' }}>
+          <strong style={{ color: 'var(--text)' }}>Minimum Viable Day: {mvdMin} min.</strong>{' '}
+          {hitMVD
+            ? 'Streak protected. Anything beyond is bonus.'
+            : `Even 15 min keeps the chain alive. You've done ${minutesToday}m.`}
+        </div>
+      </div>
+
+      <div>
+        {todayQuests.map(q => (
+          <div key={q.id} className={'quest' + (q.done ? ' quest--done' : '')}
+               onClick={() => onToggle(q.id)} style={{ cursor: 'pointer' }}>
+            <div className={'qbox' + (q.done ? ' qbox--done' : '')}>{Icon.check(14, '#1a130a')}</div>
+            <div style={{ color: q.done ? 'var(--text-4)' : 'var(--text-2)' }}>
+              {kindIcon(q.kind, 'currentColor')}
+            </div>
+            <div className="quest__body">
+              <div className="quest__title">{q.title}</div>
+              <div className="quest__meta">
+                <span>{q.mins} min</span>
+                <span style={{ color: 'var(--amber-dim)' }}>+{q.xp} XP</span>
+                {q.skill && <span className="mono" style={{ color: 'var(--text-4)' }}>#{q.skill}</span>}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════
+// WEEKLY ACTIVITY
+// ══════════════════════════════════════════════════════════════
+
+function WeeklyActivity({ weekLog, minutesToday }) {
+  const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const dayIdx = (new Date().getDay() + 6) % 7; // 0=Mon
+  const display = [...weekLog];
+  display[dayIdx] = minutesToday / 60;
+  const max = Math.max(...display, 1);
+  const total = display.reduce((a,b) => a+b, 0);
+
+  return (
+    <div className="panel fade">
+      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline', marginBottom: 12 }}>
+        <div>
+          <div className="tiny">This week</div>
+          <div style={{ font: '600 18px var(--font)', marginTop: 2 }}>{total.toFixed(1)}h <span className="muted" style={{ font: '400 13px var(--font)' }}>/ 7h goal</span></div>
+        </div>
+        {total >= 7 ? <span className="chip chip--green">on target</span> : <span className="chip chip--teal">in progress</span>}
+      </div>
+      <div style={{ display:'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 8, alignItems: 'end', height: 100 }}>
+        {display.map((h, i) => (
+          <div key={i} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap: 6, height: '100%' }}>
+            <div style={{ flex: 1, width: '100%', display:'flex', alignItems:'flex-end' }}>
+              <div style={{
+                width: '100%', height: `${Math.max((h/max)*100, 2)}%`, minHeight: 2,
+                background: i === dayIdx ? 'var(--amber)' : 'var(--teal-dim)',
+                borderRadius: '4px 4px 0 0',
+                opacity: h > 0 ? 1 : 0.3,
+              }}/>
+            </div>
+            <div className="tiny" style={{ color: i === dayIdx ? 'var(--amber)' : 'var(--text-4)' }}>{labels[i]}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════
+// PLAN TAB
+// ══════════════════════════════════════════════════════════════
+
+function SeasonTimeline({ seasonInfo }) {
+  const { currentWeek, weeksTotal } = seasonInfo;
+  const phaseStatus = (p) => {
+    const startWeek = parseInt(p.weeks.split('–')[0]);
+    const endWeek = parseInt(p.weeks.split('–')[1]);
+    if (currentWeek > endWeek) return 'done';
+    if (currentWeek >= startWeek) return 'active';
+    return 'locked';
+  };
+
+  return (
+    <div className="panel fade">
+      <div style={{ display:'flex', alignItems:'baseline', justifyContent:'space-between', marginBottom: 14 }}>
+        <div>
+          <div className="tiny">Season map</div>
+          <div style={{ font: '600 18px var(--font)', marginTop: 2 }}>Four phases · 35 weeks to December</div>
+        </div>
+        <div className="muted" style={{ fontSize: 12 }}>You are here → Week {currentWeek}</div>
+      </div>
+      <div style={{ position:'relative', marginTop: 20 }}>
+        <div style={{ position:'absolute', left: 0, right: 0, top: 20, height: 2, background: 'var(--border)' }}/>
+        <div style={{ position:'absolute', left: 0, top: 20, height: 2, width: `${(currentWeek/weeksTotal)*100}%`, background: 'var(--amber)' }}/>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap: 0, position:'relative' }}>
+          {PHASES.map((p) => {
+            const status = phaseStatus(p);
+            const active = status === 'active';
+            const done = status === 'done';
+            return (
+              <div key={p.n} style={{ padding: '0 8px' }}>
+                <div style={{ display:'flex', alignItems:'center', gap: 8, height: 40 }}>
+                  <div style={{
+                    width: 22, height: 22, borderRadius: '50%',
+                    background: active ? 'var(--amber)' : (done ? 'var(--green)' : 'var(--bg-3)'),
+                    border: active ? 'none' : '2px solid var(--border-hi)',
+                    display:'flex', alignItems:'center', justifyContent:'center',
+                    color: active ? '#1a130a' : 'var(--text-3)',
+                    font: '600 11px var(--mono)',
+                  }} className={active ? 'pulse' : ''}>
+                    {done ? '✓' : p.n}
+                  </div>
+                  <div style={{ font: '600 13px var(--font)', color: active ? 'var(--text)' : 'var(--text-2)' }}>{p.name}</div>
+                </div>
+                <div className="tiny" style={{ marginTop: 6 }}>Week {p.weeks} · {p.range}</div>
+                <div style={{ font: '400 12.5px/1.5 var(--font)', color: 'var(--text-2)', marginTop: 6 }}>{p.theme}</div>
+                <ul style={{ margin: '10px 0 0', padding: 0, listStyle: 'none', display:'flex', flexDirection:'column', gap: 4 }}>
+                  {p.focus.map((f, i) => (
+                    <li key={i} style={{ font: '400 12px var(--mono)', color: 'var(--text-3)' }}>· {f}</li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AppsPipeline({ apps }) {
+  const stages = [
+    { k: 'target', label: 'Target', color: 'var(--text-3)' },
+    { k: 'submitted', label: 'Applied', color: 'var(--teal)' },
+    { k: 'screens', label: 'Screen', color: 'var(--amber)' },
+    { k: 'onsites', label: 'Onsite', color: 'var(--amber)' },
+    { k: 'offers', label: 'Offer', color: 'var(--green)' },
+  ];
+  return (
+    <div className="panel fade">
+      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline', marginBottom: 14 }}>
+        <div>
+          <div className="tiny">Pipeline · Dec 2026 target</div>
+          <div style={{ font: '600 18px var(--font)', marginTop: 2 }}>Applications</div>
+        </div>
+        <span className="chip" style={{ color: 'var(--text-3)' }}>{Icon.lock(11)} unlocks Phase 4 · Oct 19</span>
+      </div>
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(5, 1fr)', gap: 8 }}>
+        {stages.map(s => (
+          <div key={s.k} style={{ padding: 12, background: 'var(--bg-2)', borderRadius: 8, textAlign:'center' }}>
+            <div className="tiny" style={{ color: s.color }}>{s.label}</div>
+            <div style={{ font: '600 22px var(--mono)', color: 'var(--text)', marginTop: 4 }}>{apps[s.k]}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════
+// SKILLS TAB
+// ══════════════════════════════════════════════════════════════
+
+function SkillTree({ skills }) {
+  const grouped = {};
+  skills.forEach(s => { (grouped[s.branch] ||= []).push(s); });
+  return (
+    <div className="panel fade">
+      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline', marginBottom: 14 }}>
+        <div>
+          <div className="tiny">Skill tree · coverage + retention</div>
+          <div style={{ font: '600 18px var(--font)', marginTop: 2 }}>What you know, and how fresh it is</div>
+        </div>
+        <div style={{ display:'flex', gap: 10, fontSize: 11, color: 'var(--text-3)', alignItems:'center' }}>
+          <span style={{ display:'inline-flex', alignItems:'center', gap: 5 }}><span style={{ width: 10, height: 10, background: 'var(--green)', borderRadius: 2 }}/> fresh</span>
+          <span style={{ display:'inline-flex', alignItems:'center', gap: 5 }}><span style={{ width: 10, height: 10, background: 'var(--amber)', borderRadius: 2 }}/> fading</span>
+          <span style={{ display:'inline-flex', alignItems:'center', gap: 5 }}><span style={{ width: 10, height: 10, background: 'var(--rose)', borderRadius: 2 }}/> forgotten</span>
+        </div>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}>
+        {Object.entries(BRANCHES).map(([key, br]) => (
+          <div key={key} style={{ background: 'var(--bg-2)', borderRadius: 10, padding: 14, border: '1px solid var(--border)' }}>
+            <div style={{ display:'flex', alignItems:'center', gap: 8, marginBottom: 10 }}>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: br.color }}/>
+              <span style={{ font: '500 12px var(--font)', color: 'var(--text)' }}>{br.label}</span>
+            </div>
+            <div style={{ display:'flex', flexDirection:'column', gap: 6 }}>
+              {(grouped[key] || []).map(s => {
+                const ret = s.retention;
+                const retColor = ret > 0.7 ? 'var(--green)' : ret > 0.4 ? 'var(--amber)' : 'var(--rose)';
+                return (
+                  <div key={s.id} style={{ display:'flex', alignItems:'center', gap: 8 }}>
+                    <div style={{ flex: 1, fontSize: 12.5, color: s.level ? 'var(--text)' : 'var(--text-3)' }}>{s.name}</div>
+                    <LevelPips level={s.level} max={s.max} color={br.color}/>
+                    <div style={{
+                      width: 28, height: 6, borderRadius: 2,
+                      background: `linear-gradient(to right, ${retColor} ${ret*100}%, var(--bg-3) ${ret*100}%)`,
+                    }} title={`${Math.round(ret*100)}% retained`}/>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════
+// PROJECTS TAB
+// ══════════════════════════════════════════════════════════════
+
+function ProjectBoard({ projects }) {
+  const statusColor = { shipped: 'green', active: 'amber', planned: 'teal' };
+  return (
+    <div className="panel fade">
+      <div style={{ display:'flex', alignItems:'baseline', justifyContent:'space-between', marginBottom: 14 }}>
+        <div>
+          <div className="tiny">Portfolio</div>
+          <div style={{ font: '600 18px var(--font)', marginTop: 2 }}>Projects · {projects.filter(p=>p.status!=='planned').length} active, {projects.length} total</div>
+        </div>
+      </div>
+      <div style={{ display:'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+        {projects.map(p => (
+          <div key={p.id} style={{ background: 'var(--bg-2)', border: '1px solid var(--border)', borderRadius: 10, padding: 14 }}>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'start', gap: 10 }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ font: '500 14px var(--font)', color: 'var(--text)' }}>{p.name}</div>
+                <div className="tiny" style={{ marginTop: 3 }}>{p.tag}</div>
+              </div>
+              <span className={`chip chip--${statusColor[p.status]}`}>{p.status}</span>
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 10, lineHeight: 1.5 }}>{p.note}</div>
+            <div style={{ display:'flex', flexWrap:'wrap', gap: 4, marginTop: 10 }}>
+              {p.stack.map(t => (
+                <span key={t} className="mono" style={{ fontSize: 10.5, color: 'var(--text-3)', background: 'var(--bg-3)', padding: '2px 6px', borderRadius: 3 }}>{t}</span>
+              ))}
+            </div>
+            <div style={{ marginTop: 12 }}>
+              <div style={{ display:'flex', justifyContent:'space-between', fontSize: 11, color: 'var(--text-3)', marginBottom: 4 }}>
+                <span>Target · {p.target}</span>
+                <span className="mono">{p.progress}%</span>
+              </div>
+              <div className="bar"><div className={'bar__fill' + (p.status==='shipped' ? ' bar__fill--green' : '')} style={{ width: `${p.progress}%` }}/></div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════
+// JOURNAL TAB — with real entry form
+// ══════════════════════════════════════════════════════════════
+
+function JournalTab({ journal, onAddEntry }) {
+  const [adding, setAdding] = useState(false);
+  const [mood, setMood] = useState(3);
+  const [energy, setEnergy] = useState(3);
+  const [conf, setConf] = useState(3);
+  const [note, setNote] = useState('');
+
+  const pip = (v, color) => (
+    <div style={{ display:'flex', gap: 2 }}>
+      {[1,2,3,4,5].map(n => (
+        <div key={n} style={{ width: 6, height: 10, borderRadius: 1, background: n <= v ? color : 'var(--bg-3)' }}/>
+      ))}
+    </div>
+  );
+
+  const pipInput = (val, setVal, color) => (
+    <div style={{ display:'flex', gap: 4 }}>
+      {[1,2,3,4,5].map(n => (
+        <div key={n} onClick={() => setVal(n)} style={{
+          width: 16, height: 16, borderRadius: 3, cursor: 'pointer',
+          background: n <= val ? color : 'var(--bg-3)',
+          transition: 'background 120ms',
+        }}/>
+      ))}
+    </div>
+  );
+
+  const submit = () => {
+    if (!note.trim()) return;
+    onAddEntry({ date: formatDate(todayISO()), mood, energy, conf, note: note.trim() });
+    setAdding(false);
+    setNote('');
+    setMood(3); setEnergy(3); setConf(3);
+  };
+
+  return (
+    <div className="panel fade">
+      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline', marginBottom: 14 }}>
+        <div>
+          <div className="tiny">Journal · recent entries</div>
+          <div style={{ font: '600 18px var(--font)', marginTop: 2 }}>How has the week felt?</div>
+        </div>
+        <button className="btn btn--ghost" onClick={() => setAdding(!adding)}>+ Entry</button>
+      </div>
+
+      {adding && (
+        <div style={{ padding: 14, background: 'var(--bg-2)', borderRadius: 10, border: '1px solid var(--border)', marginBottom: 14 }}>
+          <div style={{ display: 'flex', gap: 20, marginBottom: 12 }}>
+            <div><div className="tiny" style={{ marginBottom: 6, color: 'var(--rose)' }}>Mood</div>{pipInput(mood, setMood, 'var(--rose)')}</div>
+            <div><div className="tiny" style={{ marginBottom: 6, color: 'var(--amber)' }}>Energy</div>{pipInput(energy, setEnergy, 'var(--amber)')}</div>
+            <div><div className="tiny" style={{ marginBottom: 6, color: 'var(--teal)' }}>Confidence</div>{pipInput(conf, setConf, 'var(--teal)')}</div>
+          </div>
+          <input type="text" value={note} onChange={e => setNote(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && submit()}
+            placeholder="One line about today..."
+            style={{
+              width: '100%', padding: '10px 12px', borderRadius: 8,
+              background: 'var(--bg-3)', border: '1px solid var(--border)',
+              color: 'var(--text)', font: '400 13px var(--font)',
+              outline: 'none',
+            }}/>
+          <button className="btn btn--primary" onClick={submit} style={{ marginTop: 10, width: '100%', justifyContent: 'center' }}>
+            Save entry
+          </button>
+        </div>
+      )}
+
+      <div style={{ display:'grid', gridTemplateColumns:'70px repeat(3, auto) 1fr', gap: '10px 14px', alignItems:'center', fontSize: 12 }}>
+        <div className="tiny">When</div>
+        <div className="tiny" style={{ color: 'var(--rose)' }}>Mood</div>
+        <div className="tiny" style={{ color: 'var(--amber)' }}>Energy</div>
+        <div className="tiny" style={{ color: 'var(--teal)' }}>Confidence</div>
+        <div className="tiny">Note</div>
+        {journal.length === 0 && (
+          <div style={{ gridColumn: '1 / -1', padding: '30px 16px', textAlign: 'center', color: 'var(--text-3)', fontSize: 13 }}>
+            No entries yet. Click <strong style={{ color: 'var(--text-2)' }}>+ Entry</strong> after your first day.
+          </div>
+        )}
+        {[...journal].reverse().map((j, i) => (
+          <React.Fragment key={i}>
+            <div style={{ fontSize: 11.5, color: 'var(--text-3)' }}>{j.date}</div>
+            {pip(j.mood, 'var(--rose)')}
+            {pip(j.energy, 'var(--amber)')}
+            {pip(j.conf, 'var(--teal)')}
+            <div style={{ fontSize: 12.5, color: 'var(--text-2)', lineHeight: 1.45 }}>{j.note}</div>
+          </React.Fragment>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════
+// MOBILE VIEW — compact phone layout
+// ══════════════════════════════════════════════════════════════
+
+function MobileView({ state, seasonInfo, onToggle }) {
+  const { minutesToday, todayQuests, streak } = state;
+  const mvdMin = 15;
+  const dailyGoal = 60;
+  const hitMVD = minutesToday >= mvdMin;
+  const doneCount = todayQuests.filter(q => q.done).length;
+
+  return (
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', color: 'var(--text)', fontFamily: 'var(--font)', paddingBottom: 40 }}>
+      <div style={{ padding: '24px 20px 0' }}>
+        <div className="tiny">Streak · day {streak}</div>
+        <div style={{ font: '600 24px var(--font)', margin: '4px 0 2px', letterSpacing: '-0.01em' }}>
+          {hitMVD ? 'Chain safe.' : 'Keep the chain.'}
+        </div>
+        <div className="muted" style={{ fontSize: 13 }}>
+          {hitMVD ? `${minutesToday}m logged today` : `${mvdMin - minutesToday}m to MVD`}
+        </div>
+      </div>
+
+      <div style={{ padding: '20px', display:'flex', alignItems:'center', gap: 16 }}>
+        <Ring value={minutesToday} max={dailyGoal} size={100} stroke={9}
+              color={hitMVD ? 'var(--green)' : 'var(--amber)'}>
+          <div style={{ font: '600 24px var(--mono)' }}>{minutesToday}</div>
+          <div className="tiny" style={{ color: 'var(--text-3)' }}>/ {dailyGoal}m</div>
+        </Ring>
+        <div style={{ flex: 1 }}>
+          <div className="tiny">Level {state.level}</div>
+          <div style={{ font: '600 16px var(--font)', marginTop: 2 }}>{state.xp} / {state.xpToNext} XP</div>
+          <div className="bar" style={{ marginTop: 6 }}>
+            <div className="bar__fill" style={{ width: `${(state.xp/state.xpToNext)*100}%` }}/>
+          </div>
+          <div className="tiny" style={{ marginTop: 10 }}>Week {seasonInfo.currentWeek} / {seasonInfo.weeksTotal}</div>
+          <div style={{ font: '600 14px var(--font)' }}>{seasonInfo.daysLeft}d to apply</div>
+        </div>
+      </div>
+
+      <div style={{ margin: '0 16px', background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 16, padding: 14 }}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline', marginBottom: 6 }}>
+          <div style={{ font: '600 14px var(--font)' }}>Today's quests</div>
+          <div className="mono" style={{ fontSize: 12, color: 'var(--text-3)' }}>{doneCount}/{todayQuests.length}</div>
+        </div>
+        {todayQuests.map(q => (
+          <div key={q.id} style={{
+            display:'flex', alignItems:'center', gap: 10,
+            padding: '10px 0', borderBottom: '1px solid var(--border)',
+            cursor: 'pointer',
+          }} onClick={() => onToggle(q.id)}>
+            <div className={'qbox' + (q.done ? ' qbox--done' : '')}>{Icon.check(12, '#1a130a')}</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{
+                font: '500 13px var(--font)',
+                color: q.done ? 'var(--text-4)' : 'var(--text)',
+                textDecoration: q.done ? 'line-through' : 'none',
+                overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap',
+              }}>{q.title}</div>
+              <div className="quest__meta" style={{ fontSize: 11 }}>
+                <span>{q.mins}m</span>
+                <span style={{ color: 'var(--amber-dim)' }}>+{q.xp}</span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════
+// TOP NAV
+// ══════════════════════════════════════════════════════════════
+
+const TABS = ['Today', 'Plan', 'Skills', 'Projects', 'Journal'];
+function TopNav({ tab, setTab, onTweaks }) {
+  return (
+    <div style={{
+      display:'flex', alignItems:'center', justifyContent:'space-between',
+      padding: '20px 28px', borderBottom: '1px solid var(--border)',
+    }}>
+      <div style={{ display:'flex', alignItems:'center', gap: 10 }}>
+        <div style={{
+          width: 28, height: 28, borderRadius: 7,
+          background: 'linear-gradient(135deg, var(--amber), oklch(0.55 0.12 30))',
+          display:'flex', alignItems:'center', justifyContent:'center',
+          color: '#1a130a', font: '700 14px var(--mono)',
+        }}>⌁</div>
+        <div>
+          <div style={{ font: '600 14px var(--font)' }}>Career Tracker</div>
+          <div className="tiny" style={{ marginTop: -1 }}>Season One · Dec 2026</div>
+        </div>
+      </div>
+      <div className="top-nav-tabs" style={{ display:'flex', gap: 4, alignItems:'center' }}>
+        {TABS.map((t) => {
+          const on = t === tab;
+          return (
+            <button key={t} className={'btn btn--ghost'}
+              onClick={() => setTab(t)}
+              style={{
+                fontSize: 13, color: on ? 'var(--text)' : 'var(--text-3)',
+                background: on ? 'var(--panel-hi)' : 'transparent',
+              }}>{t}</button>
+          );
+        })}
+      </div>
+      <div className="top-nav-right" style={{ display:'flex', gap: 10, alignItems:'center' }}>
+        <button className="btn btn--ghost" onClick={onTweaks} style={{ fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
+          {Icon.gear(14, 'currentColor')}
+          <span className="help-btn-text">Tweaks</span>
+        </button>
+        <div style={{
+          width: 32, height: 32, borderRadius: '50%',
+          background: 'linear-gradient(135deg, var(--teal), var(--amber))',
+          display:'flex', alignItems:'center', justifyContent:'center',
+          color: '#1a130a', font: '600 13px var(--font)',
+        }}>L</div>
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════
+// ROOT APP
+// ══════════════════════════════════════════════════════════════
+
+function App() {
+  const [state, setState] = useState(initState);
+  const [tweaks, setTweaks] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('ct_tweaks_v3') || '{}'); }
+    catch { return {}; }
+  });
+  const [tweaksOpen, setTweaksOpen] = useState(false);
+  const [tab, setTab] = useState(() => localStorage.getItem('ct_tab_v3') || 'Today');
+
+  const tw = { theme: 'warm-dark', density: 'default', layout: 'dashboard', ...tweaks };
+
+  // Persist
+  useEffect(() => { saveState(state); }, [state]);
+  useEffect(() => { localStorage.setItem('ct_tweaks_v3', JSON.stringify(tw)); }, [tweaks]);
+  useEffect(() => { localStorage.setItem('ct_tab_v3', tab); }, [tab]);
+
+  // Apply theme
+  useEffect(() => {
+    const root = document.documentElement;
+    if (tw.theme === 'paper') root.setAttribute('data-theme', 'paper');
+    else if (tw.theme === 'ink') root.setAttribute('data-theme', 'ink');
+    else root.removeAttribute('data-theme');
+    root.setAttribute('data-density', tw.density);
+  }, [tw.theme, tw.density]);
+
+  // Season calculations — computed live from real dates
+  const seasonInfo = useMemo(() => {
+    const today = todayISO();
+    const daysElapsed = Math.max(0, daysBetween(SEASON_START, today));
+    const totalDays = daysBetween(SEASON_START, SEASON_END);
+    const daysLeft = Math.max(0, totalDays - daysElapsed);
+    const currentWeek = Math.max(1, Math.ceil((daysElapsed + 1) / 7));
+    const weeksTotal = 35;
+    return { daysElapsed, totalDays, daysLeft, currentWeek, weeksTotal };
+  }, []);
+
+  // Toggle quest — updates minutes, XP, streak, skills
+  const toggleQuest = useCallback((id) => {
+    setState(prev => {
+      const quest = prev.todayQuests.find(q => q.id === id);
+      if (!quest) return prev;
+
+      const nowDone = !quest.done;
+      const minsDelta = nowDone ? quest.mins : -quest.mins;
+      const xpDelta = nowDone ? quest.xp : -quest.xp;
+
+      const newMinutes = Math.max(0, prev.minutesToday + minsDelta);
+      const newXpRaw = prev.xp + xpDelta;
+
+      // Level up logic
+      let xp = newXpRaw;
+      let level = prev.level;
+      let xpToNext = prev.xpToNext;
+      while (xp >= xpToNext) {
+        xp -= xpToNext;
+        level++;
+        xpToNext = Math.floor(xpToNext * 1.3);
+      }
+      if (xp < 0) { xp = 0; } // don't go negative
+
+      // Streak: if we cross MVD threshold upward, increment streak (only once per day)
+      let streak = prev.streak;
+      let bestStreak = prev.bestStreak;
+      const wasBelowMVD = prev.minutesToday < 15;
+      const nowAboveMVD = newMinutes >= 15;
+      if (wasBelowMVD && nowAboveMVD) {
+        streak++;
+        bestStreak = Math.max(bestStreak, streak);
+      }
+      if (!wasBelowMVD && prev.minutesToday >= 15 && newMinutes < 15) {
+        streak = Math.max(0, streak - 1);
+      }
+
+      // Update skills retention
+      const skills = prev.skills.map(s => {
+        if (quest.skill === s.id && nowDone) {
+          return { ...s, retention: Math.min(1, s.retention + 0.15), lastTouched: 0 };
+        }
+        return s;
+      });
+
+      // Update week log
+      const weekLog = [...prev.weekLog];
+      const dayIdx = (new Date().getDay() + 6) % 7;
+      weekLog[dayIdx] = newMinutes / 60;
+
+      // Day log for streak tracking
+      const dayLog = { ...prev.dayLog, [todayISO()]: { minutes: newMinutes } };
+
+      return {
+        ...prev,
+        todayQuests: prev.todayQuests.map(q => q.id === id ? { ...q, done: nowDone } : q),
+        minutesToday: newMinutes,
+        totalMinutes: prev.totalMinutes + minsDelta,
+        xp, level, xpToNext,
+        streak, bestStreak,
+        skills,
+        weekLog,
+        dayLog,
+      };
+    });
+  }, []);
+
+  const addJournalEntry = useCallback((entry) => {
+    setState(prev => ({
+      ...prev,
+      journal: [...prev.journal, entry],
+    }));
+  }, []);
+
+  const updateTweaks = (patch) => setTweaks(prev => ({ ...prev, ...patch }));
+
+  const isMobile = tw.layout === 'mobile';
+
+  return (
+    <>
+      {!isMobile && <TopNav tab={tab} setTab={setTab} onTweaks={() => setTweaksOpen(!tweaksOpen)} />}
+
+      {!isMobile && tab === 'Today' && (
+        <div style={{ maxWidth: 780, margin: '32px auto', padding: 20, display:'flex', flexDirection:'column', gap: 16 }}>
+          <Hero state={state} seasonInfo={seasonInfo}/>
+          <TodayQuests state={state} onToggle={toggleQuest}/>
+          <WeeklyActivity weekLog={state.weekLog} minutesToday={state.minutesToday}/>
+        </div>
+      )}
+      {!isMobile && tab === 'Plan' && (
+        <div style={{ maxWidth: 1200, margin: '32px auto', padding: 20, display:'flex', flexDirection:'column', gap: 16 }}>
+          <SeasonTimeline seasonInfo={seasonInfo}/>
+          <AppsPipeline apps={state.apps}/>
+        </div>
+      )}
+      {!isMobile && tab === 'Skills' && (
+        <div style={{ maxWidth: 1100, margin: '32px auto', padding: 20 }}>
+          <SkillTree skills={state.skills}/>
+        </div>
+      )}
+      {!isMobile && tab === 'Projects' && (
+        <div style={{ maxWidth: 1100, margin: '32px auto', padding: 20 }}>
+          <ProjectBoard projects={state.projects}/>
+        </div>
+      )}
+      {!isMobile && tab === 'Journal' && (
+        <div style={{ maxWidth: 780, margin: '32px auto', padding: 20 }}>
+          <JournalTab journal={state.journal} onAddEntry={addJournalEntry}/>
+        </div>
+      )}
+
+      {isMobile && <MobileView state={state} seasonInfo={seasonInfo} onToggle={toggleQuest}/>}
+
+      {/* Tweaks FAB — always visible */}
+      {!tweaksOpen && (
+        <div className="tweaks-fab" onClick={() => setTweaksOpen(true)}>
+          {Icon.gear(18, 'currentColor')}
+        </div>
+      )}
+
+      <Tweaks values={tw} onChange={updateTweaks}
+              open={tweaksOpen} onClose={() => setTweaksOpen(false)} />
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
